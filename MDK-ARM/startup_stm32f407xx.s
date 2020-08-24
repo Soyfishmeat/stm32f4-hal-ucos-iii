@@ -171,6 +171,7 @@ Reset_Handler    PROC
                  EXPORT  Reset_Handler             [WEAK]
         IMPORT  SystemInit
         IMPORT  __main
+        
                 IF {FPU} != "SoftVFP"
                                                 ; Enable Floating Point Support at reset for FPU
                 LDR.W   R0, =0xE000ED88         ; Load address of CPACR register
