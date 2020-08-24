@@ -49,6 +49,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+extern int start(void);
 
 /* USER CODE END PFP */
 
@@ -86,7 +87,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-
+  start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
