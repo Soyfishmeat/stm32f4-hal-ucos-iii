@@ -1,1 +1,6 @@
 *.uvoptx
+*.uvguix.*
+*.lst
+MDK-ARM/ucos_test/
+MDK-ARM/DebugConfig/
+MDK-ARM/RTE/
