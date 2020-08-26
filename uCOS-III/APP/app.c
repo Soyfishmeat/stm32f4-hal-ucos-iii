@@ -37,6 +37,7 @@
 
 #include <includes.h>
 #include "main.h"
+#include "can.h"
 
 
 /*
@@ -53,6 +54,8 @@
 
 static  OS_TCB   AppTaskStartTCB;
 
+static  OS_TCB    AppTask1TCB;
+static  OS_TCB    AppTask2TCB;
 
 /*
 *********************************************************************************************************
@@ -62,6 +65,9 @@ static  OS_TCB   AppTaskStartTCB;
 
 static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
 
+static  CPU_STK   AppTask1Stk[APP_TASK_1_STK_SIZE];
+static  CPU_STK   AppTask2Stk[APP_TASK_2_STK_SIZE];
+
 
 /*
 *********************************************************************************************************
@@ -69,9 +75,10 @@ static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
 *********************************************************************************************************
 */
 
-static  void  AppTaskCreate (void);
-static  void  AppObjCreate  (void);
 static  void  AppTaskStart  (void *p_arg);
+
+static void AppTask1(void *p_arg);
+static void AppTask2(void *p_arg);
 
 
 /*
@@ -151,50 +158,88 @@ static  void  AppTaskStart (void *p_arg)
 #endif
 
     CPU_IntDisMeasMaxCurReset();
-    
-    
-    AppTaskCreate();                                            /* Create Application Tasks                             */
-    
-    AppObjCreate();                                             /* Create Application Objects                           */
-    
 
-    while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
-        OSTimeDlyHMSM(0, 0, 0, 100,
-                      OS_OPT_TIME_HMSM_STRICT,
-                      &err);
-    }
+    OSTaskCreate((OS_TCB *)&AppTask1TCB, 
+        (CPU_CHAR *)"App Task 1", 
+        (OS_TASK_PTR)AppTask1, 
+        (void *)0, 
+        (OS_PRIO)APP_TASK_1_PRIO, 
+        (CPU_STK *)&AppTask1Stk[0], 
+        (CPU_STK_SIZE)APP_TASK_1_STK_SIZE / 10, 
+        (CPU_STK_SIZE)APP_TASK_1_STK_SIZE, 
+        (OS_MSG_QTY)5u, 
+        (OS_TICK)0u, 
+        (void *)0, 
+        (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+        (OS_ERR *)&err);
+
+    OSTaskCreate((OS_TCB *)&AppTask2TCB, 
+        (CPU_CHAR *)"App Task 2", 
+        (OS_TASK_PTR)AppTask2, 
+        (void *)0, 
+        (OS_PRIO)APP_TASK_2_PRIO, 
+        (CPU_STK *)&AppTask2Stk[0], 
+        (CPU_STK_SIZE)APP_TASK_2_STK_SIZE / 10, 
+        (CPU_STK_SIZE)APP_TASK_2_STK_SIZE, 
+        (OS_MSG_QTY)5u, 
+        (OS_TICK)0u, 
+        (void *)0, 
+        (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+        (OS_ERR *)&err);
+
+//    while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
+//        OSTimeDlyHMSM(0, 0, 0, 100,
+//                      OS_OPT_TIME_HMSM_STRICT,
+//                      &err);
+//    }
+  OSTaskDel(&AppTaskStartTCB, &err);
 }
 
 
-/*
-*********************************************************************************************************
-*                                      CREATE APPLICATION TASKS
-*
-* Description:  This function creates the application tasks.
-*
-* Arguments  :  none
-*
-* Returns    :  none
-*********************************************************************************************************
-*/
-
-static  void  AppTaskCreate (void)
+static void AppTask1(void *p_arg)
 {
+  OS_ERR err;
+  
+  (void)p_arg;
+  
+  uint32_t count = 0;
+  uint8_t send_data[8] = {0};
+  
+  while (DEF_TRUE) {
+    printf("Task 1 : %d\r\n", count++);
+    if (CAN_Send_Data(send_data, 8))
+      printf("send data error\r\n");
+    else
+      printf("send one times\r\n");
+      
+    send_data[0]++;
+    send_data[1]++;
+    send_data[2]++;
+    send_data[3]++;
+    send_data[4]++;
+    send_data[5]++;
+    send_data[6]++;
+    send_data[7]++;
+    OSTimeDlyHMSM(0, 0, 1, 0,
+                  OS_OPT_TIME_HMSM_STRICT,
+                  &err);
+  }
 }
 
 
-/*
-*********************************************************************************************************
-*                                      CREATE APPLICATION EVENTS
-*
-* Description:  This function creates the application kernel objects.
-*
-* Arguments  :  none
-*
-* Returns    :  none
-*********************************************************************************************************
-*/
-
-static  void  AppObjCreate (void)
+static void AppTask2(void *p_arg)
 {
+  OS_ERR err;
+  
+  (void)p_arg;
+  
+  uint32_t count = 0;
+  
+  while (DEF_TRUE) {
+    printf("Task 2 : %d\r\n", count++);
+    OSTimeDlyHMSM(0, 0, 0, 500,
+                  OS_OPT_TIME_HMSM_STRICT,
+                  &err);
+  }
 }
+

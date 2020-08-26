@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "can.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -88,8 +89,18 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
   printf("Hello world\r\n");
+  CAN_Recv_Config();
+  
+  /* Start the CAN peripheral */
+  HAL_CAN_Start(&hcan1);
+  
+  /* Activate CAN RX notification */
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+  
+  
   start();
   /* USER CODE END 2 */
 
